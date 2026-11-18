@@ -1,0 +1,437 @@
+Neuron,class
+ADAL,interneuron
+ADAR,interneuron
+ADEL,sensory neuron
+ADER,sensory neuron
+ADFL,sensory neuron
+ADFR,sensory neuron
+ADLL,sensory neuron
+ADLR,sensory neuron
+AFDL,sensory neuron
+AFDR,sensory neuron
+AIAL,interneuron
+AIAR,interneuron
+AIBL,interneuron
+AIBR,interneuron
+AIML,interneuron
+AIMR,interneuron
+AINL,interneuron
+AINR,interneuron
+AIYL,interneuron
+AIYR,interneuron
+AIZL,interneuron
+AIZR,interneuron
+ALA,interneuron
+ALML,interneuron
+ALMR,interneuron
+ALNL,interneuron
+ALNR,interneuron
+AQR,interneuron
+AS1,motor neuron
+AS2,motor neuron
+AS3,motor neuron
+AS4,motor neuron
+AS5,motor neuron
+AS6,motor neuron
+AS7,motor neuron
+AS8,motor neuron
+AS9,motor neuron
+AS10,motor neuron
+AS11,motor neuron
+ASEL,sensory neuron
+ASER,sensory neuron
+ASGL,sensory neuron
+ASGR,sensory neuron
+ASHL,sensory neuron
+ASHR,sensory neuron
+ASIL,sensory neuron
+ASIR,sensory neuron
+ASJL,sensory neuron
+ASJR,sensory neuron
+ASKL,sensory neuron
+ASKR,sensory neuron
+AUAL,interneuron
+AUAR,interneuron
+AVAL,interneuron
+AVAR,interneuron
+AVBL,interneuron
+AVBR,interneuron
+AVDL,interneuron
+AVDR,interneuron
+AVEL,interneuron
+AVER,interneuron
+AVFL,interneuron
+AVFR,interneuron
+AVG,interneuron
+AVHL,interneuron
+AVHR,interneuron
+AVJL,interneuron
+AVJR,interneuron
+AVKL,interneuron
+AVKR,interneuron
+AVL,interneuron
+AVM,interneuron
+AWAL,sensory neuron
+AWAR,sensory neuron
+AWBL,sensory neuron
+AWBR,sensory neuron
+AWCL,sensory neuron
+AWCR,sensory neuron
+BAGL,interneuron
+BAGR,interneuron
+BDUL,interneuron
+BDUR,interneuron
+CA1,
+CA2,
+CA3,
+CA4,
+CA5,
+CA6,
+CA7,
+CA8,
+CA9,
+CANL,
+CANR,
+CEMDL,
+CEMDR,
+CEMVL,
+CEMVR,
+CEPDL,interneuron
+CEPDR,interneuron
+CEPVL,interneuron
+CEPVR,interneuron
+CP0,
+CP1,
+CP2,
+CP3,
+CP4,
+CP5,
+CP6,
+CP7,
+CP8,
+CP9,
+DA1,motor neuron
+DA2,motor neuron
+DA3,motor neuron
+DA4,motor neuron
+DA5,motor neuron
+DA6,motor neuron
+DA7,motor neuron
+DA8,motor neuron
+DA9,motor neuron
+DB1/3,motor neuron
+DB2,motor neuron
+DB3/1,motor neuron
+DB4,motor neuron
+DB5,motor neuron
+DB6,motor neuron
+DB7,motor neuron
+DD1,motor neuron
+DD2,motor neuron
+DD3,motor neuron
+DD4,motor neuron
+DD5,motor neuron
+DD6,motor neuron
+DVA,motor neuron
+DVB,motor neuron
+DVC,motor neuron
+DVE,
+DVF,
+DX1/2,
+DX1/2,
+DX3/4,
+DX3/4,
+EF1/2,
+EF1/2,
+EF3/4,
+EF3/4,
+FLPL,
+FLPR,
+HOA,
+HOB,
+HSNL,motor neuron
+HSNR,motor neuron
+I1L,interneuron
+I1R,interneuron
+I2L,interneuron
+I2R,interneuron
+I3,interneuron
+I4,interneuron
+I5,interneuron
+I6,interneuron
+IL1DL,sensory neuron
+IL1DR,sensory neuron
+IL1L,sensory neuron
+IL1R,sensory neuron
+IL1VL,sensory neuron
+IL1VR,sensory neuron
+IL2DL,sensory neuron
+IL2DR,sensory neuron
+IL2L,sensory neuron
+IL2R,sensory neuron
+IL2VL,sensory neuron
+IL2VR,sensory neuron
+LUAL,interneuron
+LUAR,interneuron
+M1,motor neuron
+M2L,motor neuron
+M2R,motor neuron
+M3L,motor neuron
+M3R,motor neuron
+M4,motor neuron
+M5,motor neuron
+MCL,
+MCR,
+MCML,
+MCMR,
+MI,motor neuron
+NSML,motor neuron
+NSMR,motor neuron
+OLLL,sensory neuron
+OLLR,sensory neuron
+OLQDL,sensory neuron
+OLQDR,sensory neuron
+OLQVL,sensory neuron
+OLQVR,sensory neuron
+PCAL,
+PCAR,
+PCBL,
+PCBR,
+PCCL,
+PCCR,
+PDA,
+PDB,
+PDC,
+PDEL,
+PDER,
+PGA,
+PHAL,sensory neuron
+PHAR,sensory neuron
+PHBL,sensory neuron
+PHBR,sensory neuron
+PHCL,sensory neuron
+PHCR,sensory neuron
+PHDL,
+PHDR,
+PLML,sensory neuron
+PLMR,sensory neuron
+PLNL,interneuron
+PLNR,interneuron
+PQR,sensory neuron
+PVCL,interneuron
+PVCR,interneuron
+PVDL,sensory neuron
+PVDR,sensory neuron
+PVM,sensory neuron
+PVNL,interneuron
+PVNR,interneuron
+PVPL,interneuron
+PVPR,interneuron
+PVQL,interneuron
+PVQR,interneuron
+PVR,interneuron
+PVS,interneuron
+PVT,interneuron
+PVU,
+PVV,
+PVWL,interneuron
+PVWR,interneuron
+PVY,interneuron
+PVX,interneuron
+PVZ,
+R1AL,interneuron
+R1AR,interneuron
+R1BL,interneuron
+R1BR,interneuron
+R2AL,interneuron
+R2AR,interneuron
+R2BL,interneuron
+R2BR,interneuron
+R3AL,
+R3AR,
+R3BL,
+R3BR,
+R4AL,
+R4AR,
+R4BL,
+R4BR,
+R5AL,
+R5AR,
+R5BL,
+R5BR,
+R6AL,
+R6AR,
+R6BL,
+R6BR,
+R7AL,
+R7AR,
+R7BL,
+R7BR,
+R8AL,
+R8AR,
+R8BL,
+R8BR,
+R9AL,
+R9AR,
+R9BL,
+R9BR,
+RIAL,interneuron
+RIAR,interneuron
+RIBL,interneuron
+RIBR,interneuron
+RICL,interneuron
+RICR,interneuron
+RID,interneuron
+RIFL,interneuron
+RIFR,interneuron
+RIGL,interneuron
+RIGR,interneuron
+RIH,interneuron
+RIML,interneuron
+RIMR,motor neuron
+RIPL,interneuron
+RIPR,interneuron
+RIR,interneuron
+RIS,interneuron
+RIVL,interneuron
+RIVR,interneuron
+RMDDL,motor neuron
+RMDDR,motor neuron
+RMDL,motor neuron
+RMDR,motor neuron
+RMDVL,motor neuron
+RMDVR,motor neuron
+RMED,motor neuron
+RMEL,motor neuron
+RMER,motor neuron
+RMEV,motor neuron
+RMFL,motor neuron
+RMFR,motor neuron
+RMGL,interneuron
+RMGR,interneuron
+RMHL,motor neuron
+RMHR,motor neuron
+SAADL,interneuron
+SAADR,interneuron
+SAAVL,interneuron
+SAAVR,interneuron
+SABD,interneuron
+SABVL,interneuron
+SABVR,interneuron
+SDQL,interneuron
+SDQR,interneuron
+SIADL,interneuron
+SIADR,interneuron
+SIAVL,interneuron
+SIAVR,interneuron
+SIBDL,interneuron
+SIBDR,interneuron
+SIBVL,interneuron
+SIBVR,interneuron
+SMBDL,motor neuron
+SMBDR,motor neuron
+SMBVL,motor neuron
+SMBVR,motor neuron
+SMDDL,motor neuron
+SMDDR,motor neuron
+SMDVL,motor neuron
+SMDVR,motor neuron
+SPCL,
+SPCR,
+SPDL,
+SPDR,
+SPVL,
+SPVR,
+URADL,motor neuron
+URADR,motor neuron
+URAVL,motor neuron
+URAVR,motor neuron
+URBL,interneuron
+URBR,interneuron
+URXL,interneuron
+URXR,interneuron
+URYDL,interneuron
+URYDR,interneuron
+URYVL,interneuron
+URYVR,interneuron
+VA1,motor neuron
+VA2,motor neuron
+VA3,motor neuron
+VA4,motor neuron
+VA5,motor neuron
+VA6,motor neuron
+VA7,motor neuron
+VA8,motor neuron
+VA9,motor neuron
+VA10,motor neuron
+VA11,motor neuron
+VA12,motor neuron
+VB1,motor neuron
+VB2,motor neuron
+VB3,motor neuron
+VB4,motor neuron
+VB5,motor neuron
+VB6,motor neuron
+VB7,motor neuron
+VB8,motor neuron
+VB9,motor neuron
+VB10,motor neuron
+VB11,motor neuron
+VC1,motor neuron
+VC2,motor neuron
+VC3,motor neuron
+VC4,motor neuron
+VC5,motor neuron
+VC6,motor neuron
+VD1,motor neuron
+VD2,motor neuron
+VD3,motor neuron
+VD4,motor neuron
+VD5,motor neuron
+VD6,motor neuron
+VD7,motor neuron
+VD8,motor neuron
+VD9,motor neuron
+VD10,motor neuron
+VD11,motor neuron
+VD12,motor neuron
+VD13,motor neuron
+VC04,motor neuron
+VC05,motor neuron
+AS01,motor neuron
+AS06,motor neuron
+VB06,motor neuron
+AS09,motor neuron
+DA03,motor neuron
+DD03,motor neuron
+VD07,motor neuron
+VB07,motor neuron
+AS05,motor neuron
+AS04,motor neuron
+DB07,motor neuron
+VA07,motor neuron
+DA08,motor neuron
+DD05,motor neuron
+VB04,motor neuron
+VA06,motor neuron
+DA09,motor neuron
+VB08,motor neuron
+DA04,motor neuron
+DB04,motor neuron
+VB09,motor neuron
+DD04,motor neuron
+VB03,motor neuron
+VB05,motor neuron
+AS03,motor neuron
+DA01,motor neuron
+VA02,motor neuron
+VA08,motor neuron
+AS02,motor neuron
+DD06,motor neuron
+VD08,motor neuron
+DA05,motor neuron
+VD09,motor neuron
+VA05,motor neuron
+DB02,motor neuron
+VA03,motor neuron
+VA04,motor neuron

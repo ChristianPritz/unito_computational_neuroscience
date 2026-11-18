@@ -7,6 +7,9 @@ from IPython.display import IFrame, display,HTML
 import tempfile, webbrowser, os
 from itertools import permutations
 import csv
+from joblib import Parallel, delayed
+
+
 
 def load_adjacency_matrix(filepath):
     """
@@ -40,48 +43,191 @@ def load_adjacency_matrix(filepath):
     return adjacency_matrix, node_names
 
 
-def basic_stats(G,show_degrees=False):
-    # Attach neuron names to nodes
-    G = nx.relabel_nodes(G, dict(enumerate(G.nodes)))
-    # In-degree and out-degree for each neuron
+def basic_stats(G, show_degrees=False, n_random=10):
+    """
+    Calculate basic graph statistics for a neuronal network.
+
+    Parameters
+    ----------
+    G : networkx.DiGraph
+        Directed neuronal connectivity graph.
+    show_degrees : bool
+        If True, print the in-degree and out-degree of each neuron.
+    n_random : int
+        Number of random networks used to estimate small-worldness.
+
+    Notes
+    -----
+    Clustering coefficient and small-worldness are calculated on
+    the undirected version of G.
+    """
+
+    # Ensure that the graph is a copy, so the original is not modified.
+    G = G.copy()
+
+    # In-degree and out-degree for each neuron.
     if show_degrees:
         for node in G.nodes():
             print(f"{node}: In-degree = {G.in_degree(node)}, "
                   f"Out-degree = {G.out_degree(node)}")
-   
+
+    # ---------------------------------------------------------
+    # 1. Shortest paths and reachability
+    # ---------------------------------------------------------
+
     distances = []
     disconnected = 0
     total = 0
-    
-    
 
-    pairs = list(permutations(G.nodes, 2))
-    
-    
-    for i in pairs:
-            total += 1
-            try:    
-                path = nx.shortest_path(G, source=i[0], target=i[1])
-                distances.append(nx.shortest_path_length(G, source=i[0], target=i[1]))
-            except:
-                disconnected += 1  
-                
-    reachability = (1 - disconnected/total)*100
-    # =============================================================================
-    #     Results section 
-    # =============================================================================
-    # Average in-degree and out-degree
-    print("==================================================================")
-    print("Total number of connections: " + str(len(G.edges)))
-    print("Average in-degree:", np.mean([d for n, d in G.in_degree()]))
-    print("Average out-degree:", np.mean([d for n, d in G.out_degree()]))  
-    print("------------------------------------------------------------------")
-    print("Average min. path length:", np.mean(np.array(distances)))
-    print("Reachability " + str(reachability) + " %")
+    # Consider all ordered pairs of distinct neurons.
+    pairs = permutations(G.nodes, 2)
+
+    for source, target in pairs:
+        total += 1
+
+        try:
+            # Calculate shortest directed path length.
+            distance = nx.shortest_path_length(
+                G, source=source, target=target
+            )
+            distances.append(distance)
+
+        except nx.NetworkXNoPath:
+            # No directed path exists between these neurons.
+            disconnected += 1
+
+    # Percentage of neuron pairs connected by a directed path.
+    reachability = (1 - disconnected / total) * 100 if total else 0
+
+    # ---------------------------------------------------------
+    # 2. Basic degree statistics
+    # ---------------------------------------------------------
+
+    avg_in_degree = np.mean([d for _, d in G.in_degree()])
+    avg_out_degree = np.mean([d for _, d in G.out_degree()])
+
+    # ---------------------------------------------------------
+    # 3. Clustering coefficient
+    # ---------------------------------------------------------
+
+    # Convert to an undirected graph for clustering analysis.
+    # Self-connections are removed because they do not contribute
+    # to the standard clustering coefficient.
+    G_undirected = G.to_undirected()
+    G_undirected.remove_edges_from(nx.selfloop_edges(G_undirected))
+
+    # Average clustering coefficient across all neurons.
+    clustering = nx.average_clustering(G_undirected)
+
+    # ---------------------------------------------------------
+    # 4. Small-world coefficient
+    # ---------------------------------------------------------
+
+    # Small-worldness compares the network with random networks.
+    #
+    # sigma = (C / C_random) / (L / L_random)
+    #
+    # C        = clustering coefficient of the real network
+    # C_random = average clustering of random networks
+    # L        = average shortest path length of real network
+    # L_random = average shortest path length of random networks
+
+    # Use the largest connected component to calculate path lengths.
+    # This avoids problems caused by disconnected nodes.
+    if G_undirected.number_of_nodes() > 1:
+        largest_component = max(
+            nx.connected_components(G_undirected), key=len
+        )
+        G_lcc = G_undirected.subgraph(largest_component).copy()
+
+        L = nx.average_shortest_path_length(G_lcc)
+
+        # Generate random graphs with the same number of nodes
+        # and approximately the same number of edges.
+        random_clustering = []
+        random_path_length = []
+
+        for _ in range(n_random):
+            G_random = nx.gnm_random_graph(
+                G_lcc.number_of_nodes(),
+                G_lcc.number_of_edges()
+            )
+
+            # Random graphs may be disconnected.
+            if nx.is_connected(G_random):
+                random_clustering.append(
+                    nx.average_clustering(G_random)
+                )
+                random_path_length.append(
+                    nx.average_shortest_path_length(G_random)
+                )
+
+        if random_clustering and random_path_length:
+            C_random = np.mean(random_clustering)
+            L_random = np.mean(random_path_length)
+
+            if C_random > 0 and L_random > 0 and L > 0:
+                sigma = (clustering / C_random) / (L / L_random)
+            else:
+                sigma = np.nan
+        else:
+            C_random = np.nan
+            L_random = np.nan
+            sigma = np.nan
+    else:
+        L = np.nan
+        C_random = np.nan
+        L_random = np.nan
+        sigma = np.nan
+
+    # ---------------------------------------------------------
+    # 5. Print results
+    # ---------------------------------------------------------
+
+    print("==============================================================")
+    print("NETWORK STATISTICS")
+    print("==============================================================")
+
+    print("Number of neurons:", G.number_of_nodes())
+    print("Total number of connections:", G.number_of_edges())
+
+    print("--------------------------------------------------------------")
+    print("DEGREE STATISTICS")
+    print("Average in-degree:", avg_in_degree)
+    print("Average out-degree:", avg_out_degree)
+
+    print("--------------------------------------------------------------")
+    print("PATH LENGTH AND REACHABILITY")
+    print("Average directed shortest path length:",
+          np.mean(distances) if distances else np.nan)
+    print("Reachability:", round(reachability, 2), "%")
+
+    print("--------------------------------------------------------------")
+    print("CLUSTERING AND SMALL-WORLDNESS")
+    print("Average clustering coefficient:", clustering)
+    print("Random network clustering:", C_random)
+    print("Real network path length (largest component):", L)
+    print("Random network path length:", L_random)
+    print("Small-world coefficient (sigma):", sigma)
+
+    print("==============================================================")
+
+    return {
+        "average_in_degree": avg_in_degree,
+        "average_out_degree": avg_out_degree,
+        "average_path_length": np.mean(distances) if distances else np.nan,
+        "reachability": reachability,
+        "clustering_coefficient": clustering,
+        "random_clustering": C_random,
+        "path_length_lcc": L,
+        "random_path_length": L_random,
+        "small_world_sigma": sigma
+    }
 
 
 
-def plot_adjacency_matrix(G, sort_nodes=True, cmap="jet", step=1, figsize=(2,2)):
+def plot_adjacency_matrix(G, sort_nodes=True, cmap="jet", 
+                          step=1, figsize=(2,2),show_labels=True):
     """
     Plot adjacency matrix with zeros shown as white.
     - Automatically detects 'Weight' or 'weight' edge attributes
@@ -118,12 +264,15 @@ def plot_adjacency_matrix(G, sort_nodes=True, cmap="jet", step=1, figsize=(2,2))
     cbar = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     cbar.set_label("Edge weight")
 
-    # Ticks
+   # Ticks
     ax.set_xticks(np.arange(0, n, step))
     ax.set_yticks(np.arange(0, n, step))
-    ax.set_xticklabels(nodes[::step], rotation=90, fontsize=4)
-    ax.set_yticklabels(nodes[::step], fontsize=4)
-
+    if show_labels:
+        ax.set_xticklabels(nodes[::step], rotation=90, fontsize=4)
+        ax.set_yticklabels(nodes[::step], fontsize=4)
+    else:
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
     ax.set_xlabel("Neurons", fontsize=6)
     ax.set_ylabel("Neurons", fontsize=6)
     ax.set_title("Adjacency Matrix - Weights", fontsize=7)
@@ -616,54 +765,56 @@ def plot_network(
     cmap="viridis",
     figsize=(5,5),
     show_labels=True,
-    edge_scale="auto",# NEW: "auto" or (min_width, max_width) 
-    positions=None
+    edge_width_factor=(0.5, 5),   # (min_width, max_width)
+    scaling="auto"                # "auto" or (min_weight, max_weight)
 ):
     """
-    Plot a weighted directed network with optional edge scaling.
-    
-    Parameters
-    ----------
-    G : networkx.DiGraph or Graph
-        Graph with weights stored in 'Weight' or 'weight'.
-    edge_scale : "auto" or (float, float)
-        - "auto": scales edge widths to [0.5, 5] based on min/max weights
-        - (lower, upper): manually set scaling range
+    Plot weighted network with:
+    - edge_width_factor = (min_width, max_width)
+    - scaling = "auto" OR (w_low, w_high) to map weights consistently across graphs.
+    - Legend for edge widths in lower-right corner.
     """
 
+    # ---------------------------
     # Extract weights
+    # ---------------------------
     weights = np.array([
         d.get("Weight", d.get("weight", 1.0))
         for _, _, d in G.edges(data=True)
     ])
 
-    # Normalize edge colors to [0,1]
     if len(weights) == 0:
-        weights_norm = np.ones(len(G.edges()))
-    else:
-        w_min, w_max = weights.min(), weights.max()
-        weights_norm = (weights - w_min) / (w_max - w_min + 1e-9)
+        print("Warning: Graph has no edges.")
+        weights = np.array([1.0])
 
-    # ---- NEW: EDGE WIDTH SCALING ----
-    if edge_scale == "auto":
-        width_min, width_max = 0.5, 5.0
+    # Weight domain for normalization
+    if scaling == "auto":
+        w_low, w_high = weights.min(), weights.max()
     else:
-        width_min, width_max = edge_scale  # custom tuple
+        w_low, w_high = scaling
 
-    if len(weights) == 0 or w_max == w_min:
-        edge_widths = np.full(len(weights), (width_min + width_max) / 2)
-    else:
-        edge_widths = width_min + (weights_norm * (width_max - width_min))
+    # Clip weights to scaling range
+    weights_clipped = np.clip(weights, w_low, w_high)
 
+    # Normalize weights → [0,1]
+    weights_norm = (weights_clipped - w_low) / (w_high - w_low + 1e-12)
+
+    # ---------------------------
+    # Edge width scaling
+    # ---------------------------
+    wmin, wmax = edge_width_factor
+    edge_widths = wmin + weights_norm * (wmax - wmin)
+
+    # ---------------------------
     # Layout
-    if positions is None:
-        pos = nx.spring_layout(G, seed=42)
-    else:
-        pos = positions
-        
+    # ---------------------------
+    pos = nx.spring_layout(G, seed=42)
+
     plt.figure(figsize=figsize)
 
+    # ---------------------------
     # Draw nodes
+    # ---------------------------
     nx.draw_networkx_nodes(
         G, pos,
         node_size=node_size,
@@ -673,7 +824,9 @@ def plot_network(
         alpha=0.9
     )
 
+    # ---------------------------
     # Draw edges
+    # ---------------------------
     nx.draw_networkx_edges(
         G, pos,
         width=edge_widths,
@@ -684,7 +837,9 @@ def plot_network(
         connectionstyle='arc3,rad=0.1'
     )
 
-    # Labels
+    # ---------------------------
+    # Draw labels
+    # ---------------------------
     if show_labels:
         nx.draw_networkx_labels(
             G, pos,
@@ -694,12 +849,179 @@ def plot_network(
             font_weight="bold"
         )
 
+    # ---------------------------
+    # Add width legend
+    # ---------------------------
+    import matplotlib.lines as mlines
+
+    lw1 = wmin
+    lw2 = (wmin + wmax) / 2
+    lw3 = wmax
+
+    legend_lines = [
+        mlines.Line2D([], [], linewidth=lw1, color="black", label=f"{w_low:.2f}"),
+        mlines.Line2D([], [], linewidth=lw2, color="black", label=f"{(w_low+w_high)/2:.2f}"),
+        mlines.Line2D([], [], linewidth=lw3, color="black", label=f"{w_high:.2f}"),
+    ]
+
+    plt.legend(
+        handles=legend_lines,
+        title="Edge width = weight",
+        loc="lower right",
+        frameon=True,
+        fontsize=8,
+        title_fontsize=9
+    )
+
     plt.axis("off")
     plt.title("Network Graph (weighted)")
     plt.show()
 
+
+
+def random_walk_propagation(
+    G_dir,
+    starting_neurons,
+    n_walks=1000,
+    max_steps=100,
+    weighted=True,
+    seed=42
+):
+
+    rng = np.random.default_rng(seed)
+
+    # Check that all starting neurons exist in the graph
+    missing = [
+        n for n in starting_neurons
+        if n not in G_dir
+    ]
+
+    if missing:
+        raise ValueError(
+            f"Starting neurons not found in graph: {missing}"
+        )
+
+    if len(starting_neurons) == 0:
+        raise ValueError("No starting neurons provided.")
+
+    # Store number of unique neurons visited
+    # for every walk at every time step
+    results = np.zeros((n_walks, max_steps + 1))
+
+    for walk in range(n_walks):
+
+        # Randomly select one olfactory starting neuron
+        current = rng.choice(starting_neurons)
+
+        # Keep track of all neurons visited
+        visited = {current}
+
+        results[walk, 0] = len(visited)
+
+        for step in range(1, max_steps + 1):
+
+            # Get all downstream neurons
+            neighbours = list(
+                G_dir.successors(current)
+            )
+
+            # Stop if no downstream connections exist
+            if len(neighbours) == 0:
+                results[walk, step:] = len(visited)
+                break
+
+            # Determine transition probabilities
+            if weighted:
+
+                weights = np.array([
+                    G_dir[current][n].get("weight", 1)
+                    for n in neighbours
+                ], dtype=float)
+
+                # Ignore non-positive weights
+                weights = np.maximum(weights, 0)
+
+                if weights.sum() == 0:
+                    probabilities = None
+                else:
+                    probabilities = weights / weights.sum()
+
+            else:
+                probabilities = None
+
+            # Choose next neuron
+            current = rng.choice(
+                neighbours,
+                p=probabilities
+            )
+
+            # Add neuron to visited set
+            visited.add(current)
+
+            # Record cumulative number of unique neurons
+            results[walk, step] = len(visited)
+
+    # Average number of unique neurons visited
+    mean_visited = results.mean(axis=0)
+
+    # Standard deviation across walks
+    std_visited = results.std(axis=0)
+
+    # Convert to percentage of total network
+    percentage_visited = (
+        mean_visited / G_dir.number_of_nodes()
+    ) * 100
+
+    return mean_visited, std_visited, percentage_visited
+
+def calculate_network_metrics(G_dir, name):
+
+    # Louvain community detection requires an
+    # undirected graph.
+    G_undir = G_dir.to_undirected()
+
+    # Detect communities using synaptic weights.
+    communities = nx.community.louvain_communities(
+        G_undir,
+        weight="weight",
+        seed=42
+    )
+
+    # Calculate modularity.
+    modularity = nx.community.modularity(
+        G_undir,
+        communities,
+        weight="weight"
+    )
+
+    # Calculate betweenness centrality.
+    # Using the directed graph preserves connection direction.
+    # Here we use unweighted shortest paths.
+    betweenness = nx.betweenness_centrality(
+        G_dir,
+        normalized=True,
+        weight=None
+    )
+
+    # Identify the neurons with the highest betweenness.
+    top_neurons = sorted(
+        betweenness.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:10]
+
+    print(f"\n--- {name} ---")
+    print(f"Number of communities: {len(communities)}")
+    print(f"Modularity: {modularity:.4f}")
+    print("\nTop 10 neurons by betweenness centrality:")
+
+    for neuron, value in top_neurons:
+        print(f"{neuron}: {value:.5f}")
+
+    return modularity, communities, betweenness
+
 def plot_node_neighborhood(G, start_node, max_depth, 
-                           node_size=300, edge_width_factor=2, 
+                           node_size=300,edge_width_factor = [0.5,5], 
                            cmap="viridis", figsize=(5,5),
                            show_labels=False,scaling='auto'):
     """
@@ -724,19 +1046,149 @@ def plot_node_neighborhood(G, start_node, max_depth,
     plot_network(
         subG,
         node_size=node_size,
-        edge_width_factor=edge_width_factor,
+        edge_width_factor = edge_width_factor,
         cmap=cmap,
         figsize=figsize,show_labels=show_labels,
-        edge_scale=scaling
+        scaling=scaling
     )
 
     return subG
 
 
+def indegree_outdegree_ratio(G, use_weights=True):
 
+    weight = "weight" if use_weights else None
 
+    ratios = {}
+    nodes = []
+    vals = []
+    indi = []
+    outdi = []
+    for node in G.nodes():
+        indeg = G.in_degree(node, weight=weight)
+        outdeg = G.out_degree(node, weight=weight)
+        indi.append(indeg)
+        outdi.append(outdeg)
+        if outdeg == 0:
+            ratios[node] = float("inf") if indeg > 0 else 0.0
+            
+        else:
+            ratios[node] = indeg / outdeg
+        nodes.append(node)
+        vals.append(ratios[node])
     
+    return np.array(nodes), np.array(vals),np.array(outdi),np.array(indi)
 
+
+def clustering_coefficient(G, node):
+    neighbors = list(G.neighbors(node))
+    k = len(neighbors)
+    
+    if k < 2:
+        return 0.0
+    
+    # Count edges between neighbors
+    links = 0
+    for i in range(k):
+        for j in range(i + 1, k):
+            if G.has_edge(neighbors[i], neighbors[j]):
+                links += 1
+                
+    # Clustering coefficient formula
+    return (2 * links) / (k * (k - 1))
+
+def all_clustering_coeffs(G):
+    return {node: clustering_coefficient(G, node) for node in G.nodes()}
+
+def prune_and_track_sccs_parallel(G, order="largest", n_jobs=-1, return_constituents_at=None):
+    sizes1, sizes2 = [], []
+    nodes = list(G.nodes())
+    
+    # Sort nodes by degree
+    if order == "largest":
+        nodes_sorted = sorted(nodes, key=lambda n: G.degree(n), reverse=True)
+    elif order == "smallest":
+        nodes_sorted = sorted(nodes, key=lambda n: G.degree(n))
+    else:
+        raise ValueError("order must be 'largest' or 'smallest'")
+    
+    G_copy = G.copy()
+    snapshots = []
+    
+    # Take snapshots of node sets after each removal
+    for step, node in enumerate(nodes_sorted, 1):
+        G_copy.remove_node(node)
+        if G_copy.number_of_nodes() == 0:
+            break
+        snapshots.append((step, set(G_copy.nodes())))
+    
+    # Run SCC computations in parallel
+    results = Parallel(n_jobs=n_jobs)(
+        delayed(_compute_scc_sizes)(G, nodes_remaining)
+        for _, nodes_remaining in snapshots
+    )
+    
+    # Collect results
+    for size1, size2 in results:
+        sizes1.append(size1)
+        sizes2.append(size2)
+    
+    if return_constituents_at is not None:
+        # Find the snapshot that corresponds to the requested step
+        match = next(((step, nodes_remaining) for step, nodes_remaining in snapshots 
+                      if step == return_constituents_at), None)
+        if match is not None:
+            step, nodes_remaining = match
+            H = G.subgraph(nodes_remaining).copy()
+            comps = sorted(nx.strongly_connected_components(H), key=len, reverse=True)
+            scc1_nodes = comps[0] if len(comps) > 0 else set()
+            scc2_nodes = comps[1] if len(comps) > 1 else set()
+            return sizes1, sizes2, scc1_nodes, scc2_nodes
+    
+    return sizes1, sizes2
+
+
+def _compute_scc_sizes(G, nodes_remaining):
+    H = G.subgraph(nodes_remaining).copy()
+    comps = sorted(nx.strongly_connected_components(H), key=len, reverse=True)
+    size1 = len(comps[0]) if len(comps) > 0 else 0
+    size2 = len(comps[1]) if len(comps) > 1 else 0
+    return size1, size2
+
+
+def small_worldness(G, n_rand=5, seed=None):
+    # Helper: get largest connected component if graph is disconnected
+    def largest_connected_subgraph(graph):
+        if nx.is_connected(graph):
+            return graph
+        else:
+            largest_cc = max(nx.connected_components(graph), key=len)
+            return graph.subgraph(largest_cc).copy()
+    
+    Gc = largest_connected_subgraph(G)
+    
+    # Clustering coefficient and average shortest path length
+    C = nx.average_clustering(Gc)
+    L = nx.average_shortest_path_length(Gc)
+    
+    # Random graph comparison
+    C_rand_list = []
+    L_rand_list = []
+    n = Gc.number_of_nodes()
+    m = Gc.number_of_edges()
+    
+    for i in range(n_rand):
+        G_rand = nx.gnm_random_graph(n, m, seed=(None if seed is None else seed+i))
+        G_rand_c = largest_connected_subgraph(G_rand)
+        C_rand_list.append(nx.average_clustering(G_rand_c))
+        L_rand_list.append(nx.average_shortest_path_length(G_rand_c))
+    
+    C_rand = sum(C_rand_list) / n_rand
+    L_rand = sum(L_rand_list) / n_rand
+    
+    # Small-worldness
+    S = (C / C_rand) / (L / L_rand)
+    return S
 
 print("Imports are sucessfull #######################################")
 
