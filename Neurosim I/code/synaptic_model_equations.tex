@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\title{Single-cell model with transient inhibition\\\large Equations for the Brian2 tutorial}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section*{Model overview}
+The model extends the spontaneously firing Hodgkin--Huxley cell with a
+rectangular, conductance-based inhibitory synaptic event. The membrane equation
+is
+\begin{align}
+C_m\frac{dV}{dt} &= I_{\mathrm{Na}}+I_{\mathrm{K}}+I_{\mathrm{L}}+I_{\mathrm{inh}},\\
+I_{\mathrm{Na}} &= \bar g_{\mathrm{Na}}m^3h(E_{\mathrm{Na}}-V),\\
+I_{\mathrm{K}} &= \bar g_{\mathrm{K}}n^4(E_{\mathrm{K}}-V),\\
+I_{\mathrm{L}} &= g_{\mathrm{L}}(E_{\mathrm{L}}-V),\\
+I_{\mathrm{inh}} &= g_{\mathrm{inh}}(t)(E_{\mathrm{inh}}-V).
+\end{align}
+Positive current is defined as depolarizing. Since $E_{\mathrm{inh}}=-80$ mV,
+the synaptic current is normally negative and hyperpolarizing.
+
+\section*{Synaptic event}
+Let $t_{\mathrm{on}}$ be the onset and $\Delta t$ the duration. The inhibitory
+conductance is a rectangular pulse,
+\begin{equation}
+g_{\mathrm{inh}}(t)=
+\begin{cases}
+\bar g_{\mathrm{inh}}, & t_{\mathrm{on}}\le t<t_{\mathrm{on}}+\Delta t,\\
+0, & \text{otherwise}.
+\end{cases}
+\end{equation}
+The tutorial uses $t_{\mathrm{on}}=0.5$ s, $\Delta t=0.05$ s, and
+$\bar g_{\mathrm{inh}}=2$ mS/cm$^2$. These values are student-editable.
+
+\section*{Gating dynamics}
+For each gate $x\in\{m,h,n\}$,
+\begin{equation}
+\frac{dx}{dt}=\alpha_x(V)(1-x)-\beta_x(V)x.
+\end{equation}
+With $V$ in mV and rates in ms$^{-1}$,
+\begin{align}
+\alpha_m&=\frac{(V+40)/10}{1-e^{-(V+40)/10}}, &
+\beta_m&=4e^{-(V+65)/18},\\
+\alpha_h&=0.07e^{-(V+65)/20}, &
+\beta_h&=\frac{1}{1+e^{-(V+35)/10}},\\
+\alpha_n&=0.1\frac{(V+55)/10}{1-e^{-(V+55)/10}}, &
+\beta_n&=0.125e^{-(V+65)/80}.
+\end{align}
+
+\section*{Parameters}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Parameter & Value & Meaning\\
+\midrule
+$C_m$ & $1\,\mu$F/cm$^2$ & capacitance density\\
+$\bar g_{\mathrm{Na}}$ & $120$ mS/cm$^2$ & maximal sodium conductance\\
+$\bar g_{\mathrm{K}}$ & $36$ mS/cm$^2$ & maximal potassium conductance\\
+$g_{\mathrm{L}}$ & $0.3$ mS/cm$^2$ & leak conductance\\
+$\bar g_{\mathrm{inh}}$ & $2$ mS/cm$^2$ & inhibitory event strength\\
+$E_{\mathrm{Na}}$ & $50$ mV & sodium reversal potential\\
+$E_{\mathrm{K}}$ & $-77$ mV & potassium reversal potential\\
+$E_{\mathrm{L}}$ & $-30$ mV & depolarizing leak reversal\\
+$E_{\mathrm{inh}}$ & $-80$ mV & inhibitory reversal potential\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The cell starts at $V(0)=-65$ mV, with each gate initialized to
+$x_\infty(V)=\alpha_x/(\alpha_x+\beta_x)$. Spikes are measured at upward
+crossings of the operational sodium-activation threshold $-55$ mV. Since
+Hodgkin--Huxley activation is continuous, this is a pedagogical measurement
+threshold rather than a hard channel switch; voltage is not reset.
+\end{document}

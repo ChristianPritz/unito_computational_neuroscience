@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Lobster STG AB/PD model with LP inhibition</title>
+<style>
+@page{size:A4;margin:18mm}body{font-family:"DejaVu Serif",serif;color:#202735;
+line-height:1.28;font-size:9.5pt;max-width:800px;margin:auto}h1{color:#2457a6;
+text-align:center;font-size:21pt;margin-bottom:2px}.sub{text-align:center;color:#596579}
+h2{color:#2457a6;border-bottom:1px solid #ccd5e2;padding-bottom:2px;margin-top:18px}
+.eq{text-align:center;font-size:11pt;margin:7px 0}.note{background:#fff1e6;
+border-left:4px solid #f4a261;padding:7px 10px}table{border-collapse:collapse;width:100%;
+margin:8px 0;font-size:8.5pt}th{background:#2457a6;color:white}th,td{border:1px solid
+#aab4c2;padding:4px 5px;text-align:left}tr:nth-child(even){background:#f2f5f9}
+code{font-size:8.5pt}.small{font-size:8.5pt}
+</style></head><body>
+<h1>Lobster STG AB/PD model with transient LP inhibition</h1>
+<p class="sub">Brian2 student tutorial based on Prinz, Bucher &amp; Marder (2004)</p>
+
+<h2>Scope and selected cell</h2>
+<p>The biological pacemaker kernel contains one anterior burster (AB) and two
+pyloric dilator (PD) neurons. Following the paper, they are represented by one
+single-compartment AB/PD model. This lesson selects <b>AB/PD model 3</b>; the
+paper reports five valid AB/PD conductance combinations.</p>
+
+<h2>Membrane and calcium equations</h2>
+<div class="eq"><i>C</i> d<i>V</i>/d<i>t</i> = −(<i>I</i><sub>Na</sub> +
+<i>I</i><sub>CaT</sub> + <i>I</i><sub>CaS</sub> + <i>I</i><sub>A</sub> +
+<i>I</i><sub>KCa</sub> + <i>I</i><sub>Kd</sub> + <i>I</i><sub>H</sub> +
+<i>I</i><sub>leak</sub> + <i>I</i><sub>syn</sub>)</div>
+<div class="eq"><i>I</i><sub>i</sub> = ḡ<sub>i</sub><i>m</i><sub>i</sub><sup>p</sup><i>h</i><sub>i</sub>(<i>V</i>−<i>E</i><sub>i</sub>), &nbsp;
+<i>I</i><sub>leak</sub> = <i>g</i><sub>leak</sub>(<i>V</i>−<i>E</i><sub>leak</sub>)</div>
+<div class="eq">τ<sub>Ca</sub> d[Ca]/d<i>t</i> = −<i>f</i>(<i>I</i><sub>CaT</sub>+<i>I</i><sub>CaS</sub>) − [Ca] + [Ca]<sub>0</sub></div>
+<div class="eq"><i>E</i><sub>Ca</sub> = 12.2 mV ln([Ca]<sub>out</sub>/[Ca])</div>
+<p>Area = 0.628×10<sup>−3</sup> cm²; <i>C</i> = 0.628 nF;
+τ<sub>Ca</sub> = 200 ms; <i>f</i> = 14.96 µM/nA; [Ca]<sub>0</sub> = 0.05 µM;
+[Ca]<sub>out</sub> = 3 mM. Reversals are <i>E</i><sub>Na</sub> = 50,
+<i>E</i><sub>K</sub> = −80, <i>E</i><sub>H</sub> = −20, and
+<i>E</i><sub>leak</sub> = −50 mV; <i>E</i><sub>Ca</sub> is dynamic.</p>
+
+<h2>AB/PD model 3 conductances (paper Table 2)</h2>
+<table><tr><th>Current</th><th>Na</th><th>CaT</th><th>CaS</th><th>A</th><th>K(Ca)</th><th>Kd</th><th>H</th><th>leak</th></tr>
+<tr><td>ḡ (mS/cm²)</td><td>200</td><td>2.5</td><td>4</td><td>50</td><td>5</td><td>50</td><td>0.01</td><td>0</td></tr>
+<tr><td>Activation power</td><td>3</td><td>3</td><td>3</td><td>3</td><td>4</td><td>4</td><td>1</td><td>—</td></tr></table>
+
+<h2>Channel gates</h2>
+<p>Every gate follows τ<sub>x</sub>d<i>x</i>/d<i>t</i> =
+<i>x</i><sub>∞</sub>−<i>x</i>. Below, <i>v</i> is voltage in mV and all time
+constants are in ms.</p>
+<table class="small"><tr><th>Gate</th><th>Steady state</th><th>Time constant</th></tr>
+<tr><td>m<sub>Na</sub></td><td>[1+e<sup>(v+25.5)/−5.29</sup>]<sup>−1</sup></td><td>−2.52/[1+e<sup>(v+120)/−25</sup>]+2.64</td></tr>
+<tr><td>h<sub>Na</sub></td><td>[1+e<sup>(v+48.9)/5.18</sup>]<sup>−1</sup></td><td>{1.34/[1+e<sup>−(v+62.9)/10</sup>]}{[1+e<sup>(v+34.9)/3.6</sup>]<sup>−1</sup>+1.5}</td></tr>
+<tr><td>m<sub>CaT</sub></td><td>[1+e<sup>(v+27.1)/−7.2</sup>]<sup>−1</sup></td><td>−42.6/[1+e<sup>(v+68.1)/−20.5</sup>]+43.4</td></tr>
+<tr><td>h<sub>CaT</sub></td><td>[1+e<sup>(v+32.1)/5.5</sup>]<sup>−1</sup></td><td>−179.6/[1+e<sup>(v+55)/−16.9</sup>]+210</td></tr>
+<tr><td>m<sub>CaS</sub></td><td>[1+e<sup>(v+33)/−8.1</sup>]<sup>−1</sup></td><td>2.8+14/[e<sup>(v+27)/10</sup>+e<sup>(v+70)/−13</sup>]</td></tr>
+<tr><td>h<sub>CaS</sub></td><td>[1+e<sup>(v+60)/6.2</sup>]<sup>−1</sup></td><td>120+300/[e<sup>(v+55)/9</sup>+e<sup>(v+65)/−16</sup>]</td></tr>
+<tr><td>m<sub>A</sub></td><td>[1+e<sup>(v+27.2)/−8.7</sup>]<sup>−1</sup></td><td>−20.8/[1+e<sup>(v+32.9)/−15.2</sup>]+23.2</td></tr>
+<tr><td>h<sub>A</sub></td><td>[1+e<sup>(v+56.9)/4.9</sup>]<sup>−1</sup></td><td>−58.4/[1+e<sup>(v+38.9)/−26.5</sup>]+77.2</td></tr>
+<tr><td>m<sub>KCa</sub></td><td>{[Ca]/([Ca]+3 µM)}{[1+e<sup>(v+28.3)/−12.6</sup>]<sup>−1</sup>}</td><td>−150.2/[1+e<sup>(v+46)/−22.7</sup>]+180.6</td></tr>
+<tr><td>m<sub>Kd</sub></td><td>[1+e<sup>(v+12.3)/−11.8</sup>]<sup>−1</sup></td><td>−12.8/[1+e<sup>(v+28.3)/−19.2</sup>]+14.4</td></tr>
+<tr><td>m<sub>H</sub></td><td>[1+e<sup>(v+75)/5.5</sup>]<sup>−1</sup></td><td>2/[e<sup>(v+169.7)/−11.6</sup>+e<sup>(v−26.7)/14.3</sup>]</td></tr></table>
+
+<h2>Transient LP→PD glutamatergic inhibition</h2>
+<div class="eq"><i>I</i><sub>syn</sub> = <i>g</i><sub>s</sub><i>s</i>(<i>V</i>−<i>E</i><sub>s</sub>), &nbsp;
+d<i>s</i>/d<i>t</i> = (<i>s</i><sub>∞</sub>−<i>s</i>)/τ<sub>s</sub></div>
+<div class="eq"><i>s</i><sub>∞</sub> = [1+exp((<i>V</i><sub>th</sub>−<i>V</i><sub>LP</sub>)/Δ)]<sup>−1</sup>, &nbsp;
+τ<sub>s</sub> = (1−<i>s</i><sub>∞</sub>)/<i>k</i><sub>−</sub></div>
+<p>For LP glutamate, the paper specifies <i>E</i><sub>s</sub> = −70 mV,
+<i>k</i><sub>−</sub> = 1/40 ms<sup>−1</sup>, <i>V</i><sub>th</sub> = −35 mV,
+and Δ = 5 mV. It tests <i>g</i><sub>s</sub> ∈ {0, 3, 10, 30, 100} nS;
+this lesson uses 30 nS. The settings dictionary controls an idealized LP active
+waveform (<i>V</i><sub>LP</sub> = 20 mV active, −60 mV otherwise).</p>
+
+<p class="note"><b>Initialization:</b> The original database loaded saved
+limit-cycle states. This standalone tutorial instead performs a 5 s unrecorded
+settling run. The −20 mV spike threshold is only a measurement convention;
+voltage is never reset.</p>
+
+<h2>Sources</h2>
+<p>Prinz, A.A., Bucher, D. &amp; Marder, E. (2004), <i>Similar network activity
+from disparate circuit parameters</i>, Nature Neuroscience 7:1345–1352.
+Channel kinetics: Prinz, A.A., Billimoria, C.P. &amp; Marder, E. (2003),
+Journal of Neurophysiology 90:3998–4015.</p>
+</body></html>
