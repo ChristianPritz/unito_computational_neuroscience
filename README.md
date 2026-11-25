@@ -1,7 +1,6 @@
 # unito_computational_neuroscience
 
-This repository contains the code for NEU0278A Computational Neuroscience at the University of Turin 
-
+This repository contains the code examples for the Computational Neuroscience course NEU0278A at the University of Turin 
 
 
 ## Lesson I: Connectomics in C. elegans 
@@ -14,6 +13,7 @@ Click on the Colab link below to start the course:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
 https://colab.research.google.com/github/ChristianPritz/unito_computational_neuroscience/blob/main/connectomics_i/connectomics_i.ipynb
+) 
 
 This lesson uses the connectome data from Varshney et al., (2011) PLOS Comp. Biol.
 
